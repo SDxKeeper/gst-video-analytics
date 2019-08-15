@@ -73,6 +73,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wuninitialized -Warray-bounds -fstack-prote
 set(C_FLAGS -Wall -Wextra)
 set(CXX_FLAGS -Wall -Wextra)
 
+#needed for musl linker
+link_directories(/usr/lib/x86_64-linux-gnu/)
+
 function (set_compile_flags TARGET)
     target_compile_options(${TARGET} PRIVATE $<$<COMPILE_LANGUAGE:C>:${C_FLAGS}> $<$<COMPILE_LANGUAGE:CXX>:${CXX_FLAGS}>)
 endfunction(set_compile_flags)
