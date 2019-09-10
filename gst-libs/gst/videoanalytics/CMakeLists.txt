@@ -40,4 +40,9 @@ PUBLIC
         ${GLIB2_LIBRARIES}
 )
 
+target_link_directories(${TARGET_NAME}
+PUBLIC
+        ${GLIB2_LIBRARY_DIRS}
+)
+
 install(TARGETS ${TARGET_NAME} DESTINATION lib/va-gstreamer-plugins)
