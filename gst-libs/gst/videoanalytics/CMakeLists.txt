@@ -40,8 +40,7 @@ PUBLIC
         ${GLIB2_LIBRARIES}
 )
 
-target_link_directories(${TARGET_NAME}
-PUBLIC
+link_directories(
         ${GLIB2_LIBRARY_DIRS}
 )
 
