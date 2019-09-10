@@ -22,6 +22,10 @@ file (GLOB MAIN_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/*.h
         )
 
+link_directories(
+        ${GLIB2_LIBRARY_DIRS}
+)
+
 add_library(${TARGET_NAME} SHARED ${MAIN_SRC} ${MAIN_HEADERS})
 set_target_lib_version(${TARGET_NAME})
 set_compile_flags(${TARGET_NAME})
@@ -38,10 +42,6 @@ PUBLIC
         ${GSTREAMER_LIBRARIES}
         ${GSTVIDEO_LIBRARIES}
         ${GLIB2_LIBRARIES}
-)
-
-link_directories(
-        ${GLIB2_LIBRARY_DIRS}
 )
 
 install(TARGETS ${TARGET_NAME} DESTINATION lib/va-gstreamer-plugins)
