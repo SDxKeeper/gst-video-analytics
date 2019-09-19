@@ -238,7 +238,7 @@ std::cout << "OpenVINOImageInference begin"<<std::endl<<std::flush;
         }
     }
     network.setBatchSize(batch_size);
-
+std::cout << "OpenVINOImageInference middle"<<std::endl<<std::flush;
     for (const std::string &device : devices_vec) { // '-' separated list of devices
         IE::InferencePlugin::Ptr plugin;
         try {
