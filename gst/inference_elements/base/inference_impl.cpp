@@ -136,6 +136,7 @@ InferenceImpl::Model InferenceImpl::CreateModel(GvaBaseInference *gva_base_infer
                                                 std::shared_ptr<Allocator> &allocator, const std::string &model_file,
                                                 const std::string &model_proc_path) {
 
+    std::cout << "Inf::InferenceImpl::CreateModel begin"<<std::endl<<std::flush;
     if (!file_exists(model_file)) {
         const std::string error_message = std::string("Model file does not exist (") + model_file + std::string(")");
         GST_ERROR_OBJECT(gva_base_inference, "%s", error_message.c_str());
@@ -168,10 +169,12 @@ InferenceImpl::Model InferenceImpl::CreateModel(GvaBaseInference *gva_base_infer
             break;
         }
     }
+    std::cout << "Inf::InferenceImpl::CreateModel end"<<std::endl<<std::flush;
     return model;
 }
 
 InferenceImpl::InferenceImpl(GvaBaseInference *gva_base_inference) : frame_num(-1) {
+    std::cout << "Inf::InferenceImpl::ctor begin"<<std::endl<<std::flush;
     assert(gva_base_inference != nullptr);
 
     if (!gva_base_inference->model) {
@@ -190,24 +193,30 @@ InferenceImpl::InferenceImpl(GvaBaseInference *gva_base_inference) : frame_num(-
         auto model = CreateModel(gva_base_inference, allocator, model_files[i], model_proc);
         this->models.push_back(std::move(model));
     }
+    std::cout << "Inf::InferenceImpl::ctor end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::FlushInference() {
+    std::cout << "Inf::InferenceImpl::FlushInference begin"<<std::endl<<std::flush;
     for (Model &model : models) {
         model.inference->Flush();
     }
+    std::cout << "Inf::InferenceImpl::end begin"<<std::endl<<std::flush;
 }
 
 InferenceImpl::~InferenceImpl() {
+    std::cout << "Inf::InferenceImpl::dtor begin"<<std::endl<<std::flush;
     for (Model &model : models) {
         for (auto proc : model.proc) {
             gst_structure_free(proc.second);
         }
     }
     models.clear();
+    std::cout << "Inf::InferenceImpl::dtor begin"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::PushOutput() {
+    std::cout << "Inf::InferenceImpl::PushOutput begin"<<std::endl<<std::flush;
     while (!output_frames.empty()) {
         OutputFrame &front = output_frames.front();
         assert(front.inference_count >= 0);
@@ -222,24 +231,28 @@ void InferenceImpl::PushOutput() {
 
         output_frames.pop_front();
     }
+    std::cout << "Inf::InferenceImpl::PushOutput end"<<std::endl<<std::flush;
 }
 
 std::shared_ptr<InferenceImpl::InferenceResult>
 InferenceImpl::MakeInferenceResult(GvaBaseInference *gva_base_inference, Model &model,
                                    GstVideoRegionOfInterestMeta *meta, std::shared_ptr<InferenceBackend::Image> image,
                                    GstBuffer *buffer) {
+    std::cout << "Inf::InferenceImpl::MakeInferenceResult begin"<<std::endl<<std::flush;
     auto result = std::make_shared<InferenceResult>();
     result->inference_frame.buffer = buffer;
     result->inference_frame.roi = *meta;
     result->inference_frame.gva_base_inference = gva_base_inference;
     result->model = &model;
     result->image = image;
+    std::cout << "Inf::InferenceImpl::MakeInferenceResult end"<<std::endl<<std::flush;
     return result;
 }
 
 RoiPreProcessorFunction InferenceImpl::GetPreProcFunction(GvaBaseInference *gva_base_inference,
                                                           GstStructure *input_preproc,
                                                           GstVideoRegionOfInterestMeta *meta) {
+    std::cout << "Inf::InferenceImpl::GetPreProcFunction begin"<<std::endl<<std::flush;
     RoiPreProcessorFunction pre_proc = [](InferenceBackend::Image &) {};
     if (input_preproc) {
         if (gva_base_inference->get_roi_pre_proc) {
@@ -250,12 +263,14 @@ RoiPreProcessorFunction InferenceImpl::GetPreProcFunction(GvaBaseInference *gva_
             };
         }
     }
+    std::cout << "Inf::InferenceImpl::GetPreProcFunction end"<<std::endl<<std::flush;
     return pre_proc;
 }
 
 GstFlowReturn InferenceImpl::SubmitImages(GvaBaseInference *gva_base_inference,
                                           const std::vector<GstVideoRegionOfInterestMeta *> &metas, GstVideoInfo *info,
                                           GstBuffer *buffer) {
+    std::cout << "Inf::InferenceImpl::SubmitImages begin"<<std::endl<<std::flush;
     // return FLOW_DROPPED as we push buffers from separate thread
     GstFlowReturn return_status = GST_BASE_TRANSFORM_FLOW_DROPPED;
 
@@ -286,11 +301,13 @@ GstFlowReturn InferenceImpl::SubmitImages(GvaBaseInference *gva_base_inference,
     }
 
 EXIT_LABEL:
+    std::cout << "Inf::InferenceImpl::SubmitImages end"<<std::endl<<std::flush;
     return return_status;
 }
 
 GstFlowReturn InferenceImpl::TransformFrameIp(GvaBaseInference *gva_base_inference, GstBuffer *buffer,
                                               GstVideoInfo *info) {
+    std::cout << "Inf::InferenceImpl::TransformFrameIp begin"<<std::endl<<std::flush;
     std::unique_lock<std::mutex> lock(_mutex);
 
     assert(gva_base_inference != nullptr);
@@ -357,19 +374,22 @@ GstFlowReturn InferenceImpl::TransformFrameIp(GvaBaseInference *gva_base_inferen
             return GST_BASE_TRANSFORM_FLOW_DROPPED;
         }
     }
-
+    std::cout << "Inf::InferenceImpl::TransformFrameIp end"<<std::endl<<std::flush;
     return SubmitImages(gva_base_inference, metas, info, buffer);
 }
 
 void InferenceImpl::SinkEvent(GstEvent *event) {
+    std::cout << "Inf::InferenceImpl::SinkEvent begin"<<std::endl<<std::flush;
     if (event->type == GST_EVENT_EOS) {
         for (Model &model : models) {
             model.inference->Flush();
         }
     }
+    std::cout << "Inf::InferenceImpl::SinkEvent end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::InferenceCompletionCallback(
+    std::cout << "Inf::InferenceImpl::InferenceCompletionCallback begin"<<std::endl<<std::flush;
     std::map<std::string, InferenceBackend::OutputBlob::Ptr> blobs,
     std::vector<std::shared_ptr<InferenceBackend::ImageInference::IFrameBase>> frames) {
     if (frames.empty())
@@ -418,4 +438,5 @@ void InferenceImpl::InferenceCompletionCallback(
     }
 
     PushOutput();
+    std::cout << "Inf::InferenceImpl::InferenceCompletionCallback end"<<std::endl<<std::flush;
 }
