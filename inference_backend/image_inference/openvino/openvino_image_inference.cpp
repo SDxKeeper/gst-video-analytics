@@ -181,8 +181,10 @@ class IEOutputBlob : public OutputBlob {
 //////////////////////////////////////////////////////////////////////////////////
 
 OpenVINOImageInference::~OpenVINOImageInference() {
+std::cout << "OpenVINOImageInference::dtor begin"<<std::endl<<std::flush;
     GVA_DEBUG("Image Inference destruct");
     Close();
+std::cout << "OpenVINOImageInference::dtor end"<<std::endl<<std::flush;    
 }
 
 OpenVINOImageInference::OpenVINOImageInference(std::string devices, std::string model, int batch_size, int nireq,
@@ -328,10 +330,13 @@ std::cout << "OpenVINOImageInference begin"<<std::endl<<std::flush;
 }
 
 bool OpenVINOImageInference::IsQueueFull() {
+std::cout << "OpenVINOImageInference::IsQueueFull begin"<<std::endl<<std::flush;    
     return freeRequests.empty();
+std::cout << "OpenVINOImageInference::IsQueueFull end"<<std::endl<<std::flush;        
 }
 
 void OpenVINOImageInference::GetNextImageBuffer(std::shared_ptr<BatchRequest> request, Image *image) {
+std::cout << "OpenVINOImageInference::GetNextImageBuffer begin"<<std::endl<<std::flush;        
     GVA_DEBUG(__FUNCTION__);
     ITT_TASK(__FUNCTION__);
 
@@ -353,10 +358,12 @@ void OpenVINOImageInference::GetNextImageBuffer(std::shared_ptr<BatchRequest> re
     image->stride[0] = image->width;
     image->stride[1] = image->width;
     image->stride[2] = image->width;
+std::cout << "OpenVINOImageInference::GetNextImageBuffer end"<<std::endl<<std::flush;
 }
 
 void OpenVINOImageInference::SubmitImageSoftwarePreProcess(std::shared_ptr<BatchRequest> request, const Image &srcImg,
                                                            std::function<void(Image &)> preProcessor) {
+    std::cout << "OpenVINOImageInference::SubmitImageSoftwarePreProcess start"<<std::endl<<std::flush;
     if (!sw_vpp.get()) {
         auto frameBlob = WrapImage2Blob(srcImg);
         std::string inputName = inputs.begin()->first;
@@ -380,6 +387,7 @@ void OpenVINOImageInference::SubmitImageSoftwarePreProcess(std::shared_ptr<Batch
             }
         }
     }
+    std::cout << "OpenVINOImageInference::SubmitImageSoftwarePreProcess end"<<std::endl<<std::flush;
 }
 
 void OpenVINOImageInference::SubmitImage(const Image &image, IFramePtr user_data,
@@ -419,22 +427,27 @@ const std::string &OpenVINOImageInference::GetModelName() const {
 }
 
 void OpenVINOImageInference::GetModelInputInfo(int *width, int *height, int *format) const {
+    std::cout << "OpenVINOImageInference::GetModelInputInfo start"<<std::endl<<std::flush;
     auto dims = inputs.begin()->second->getDims();
     if (dims.size() < 2)
         throw std::runtime_error("Incorrect model input dimensions");
     *width = dims[0];
     *height = dims[1];
     *format = FOURCC_RGBP;
+    std::cout << "OpenVINOImageInference::GetModelInputInfo end"<<std::endl<<std::flush;
 }
 
 void OpenVINOImageInference::Flush() {
+    std::cout << "OpenVINOImageInference::Flush start"<<std::endl<<std::flush;
     std::unique_lock<std::mutex> lk(mutex_);
     if (requests_processing_ != 0) {
         request_processed_.wait_for(lk, std::chrono::seconds(1), [this] { return requests_processing_ == 0; });
     }
+    std::cout << "OpenVINOImageInference::Flush end"<<std::endl<<std::flush;
 }
 
 void OpenVINOImageInference::Close() {
+    std::cout << "OpenVINOImageInference::Close start"<<std::endl<<std::flush;
     Flush();
     while (!freeRequests.empty()) {
         auto req = freeRequests.pop();
@@ -445,9 +458,11 @@ void OpenVINOImageInference::Close() {
                 allocator->Free(ac);
         }
     }
+    std::cout << "OpenVINOImageInference::Close end"<<std::endl<<std::flush;
 }
 
 void OpenVINOImageInference::WorkingFunction(std::shared_ptr<BatchRequest> request) {
+    std::cout << "OpenVINOImageInference::WorkingFunction start"<<std::endl<<std::flush;
     GVA_DEBUG(__FUNCTION__);
     std::map<std::string, OutputBlob::Ptr> output_blobs;
     for (auto output : outputs) {
@@ -457,4 +472,5 @@ void OpenVINOImageInference::WorkingFunction(std::shared_ptr<BatchRequest> reque
     callback(output_blobs, request->buffers);
     request->buffers.clear();
     freeRequests.push(request);
+    std::cout << "OpenVINOImageInference::end start"<<std::endl<<std::flush;
 }
