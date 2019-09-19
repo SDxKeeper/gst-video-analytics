@@ -28,6 +28,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
 
 using namespace std::placeholders;
 using namespace InferenceBackend;
