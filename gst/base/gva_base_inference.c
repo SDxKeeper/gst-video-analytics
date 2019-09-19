@@ -56,6 +56,7 @@ enum {
 };
 
 void gva_base_inference_class_init(GvaBaseInferenceClass *klass) {
+    printf("gva_base_inference_class_init start/n");fflush(stdout);
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GstBaseTransformClass *base_transform_class = GST_BASE_TRANSFORM_CLASS(klass);
     GstElementClass *element_class = GST_ELEMENT_CLASS(klass);
@@ -128,9 +129,11 @@ void gva_base_inference_class_init(GvaBaseInferenceClass *klass) {
                                     g_param_spec_string("allocator-name", "AllocatorName",
                                                         "Registered allocator name to be used", DEFAULT_ALLOCATOR_NAME,
                                                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+    printf("gva_base_inference_class_init end/n");fflush(stdout);
 }
 
 void gva_base_inference_cleanup(GvaBaseInference *base_inference) {
+    printf("gva_base_inference_cleanup start/n");fflush(stdout);
     if (base_inference == NULL)
         return;
 
@@ -168,9 +171,11 @@ void gva_base_inference_cleanup(GvaBaseInference *base_inference) {
     }
 
     base_inference->initialized = FALSE;
+    printf("gva_base_inference_cleanup end/n");fflush(stdout);
 }
 
 void gva_base_inference_init(GvaBaseInference *base_inference) {
+    printf("gva_base_inference_init start/n");fflush(stdout);
     GST_DEBUG_OBJECT(base_inference, "gva_base_inference_reset");
 
     if (base_inference == NULL)
@@ -197,9 +202,11 @@ void gva_base_inference_init(GvaBaseInference *base_inference) {
     base_inference->pre_proc = NULL;
     base_inference->post_proc = NULL;
     base_inference->get_roi_pre_proc = NULL;
+    printf("gva_base_inference_init end/n");fflush(stdout);
 }
 
 GstStateChangeReturn gva_base_inference_change_state(GstElement *element, GstStateChange transition) {
+    printf("gva_base_inference_change_state start/n");fflush(stdout);
     GstStateChangeReturn ret;
     GvaBaseInference *base_inference;
 
@@ -216,11 +223,12 @@ GstStateChangeReturn gva_base_inference_change_state(GstElement *element, GstSta
     default:
         break;
     }
-
+printf("gva_base_inference_change_state end/n");fflush(stdout);
     return ret;
 }
 
 gboolean check_gva_base_inference_stopped(GvaBaseInference *base_inference) {
+    printf("check_gva_base_inference_stopped start/n");fflush(stdout);
     GstState state;
     gboolean is_stopped;
 
@@ -228,11 +236,12 @@ gboolean check_gva_base_inference_stopped(GvaBaseInference *base_inference) {
     state = GST_STATE(base_inference);
     is_stopped = state == GST_STATE_READY || state == GST_STATE_NULL;
     GST_OBJECT_UNLOCK(base_inference);
+    printf("check_gva_base_inference_stopped end/n");fflush(stdout);
     return is_stopped;
 }
 
 void gva_base_inference_set_model(GvaBaseInference *base_inference, const gchar *model_path) {
-
+printf("gva_base_inference_set_model start/n");fflush(stdout);
     if (check_gva_base_inference_stopped(base_inference)) {
         if (model_path != NULL) {
             if (base_inference->model)
@@ -243,9 +252,11 @@ void gva_base_inference_set_model(GvaBaseInference *base_inference, const gchar 
             g_warning("You cannot change 'model' property on base_inference when a file is open");
         }
     }
+printf("gva_base_inference_set_model end/n");fflush(stdout);    
 }
 
 void gva_base_inference_set_model_proc(GvaBaseInference *base_inference, const gchar *model_proc_path) {
+printf("gva_base_inference_set_model_proc start/n");fflush(stdout);
     if (check_gva_base_inference_stopped(base_inference)) {
         if (model_proc_path != NULL) {
             if (base_inference->model_proc)
@@ -256,9 +267,11 @@ void gva_base_inference_set_model_proc(GvaBaseInference *base_inference, const g
             g_warning("You cannot change 'model-proc' property on base_inference when a file is open");
         }
     }
+    printf("gva_base_inference_set_model_proc end/n");fflush(stdout);
 }
 
 void gva_base_inference_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec) {
+    printf("gva_base_inference_set_property start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(object);
 
     GST_DEBUG_OBJECT(base_inference, "set_property");
@@ -301,9 +314,11 @@ void gva_base_inference_set_property(GObject *object, guint property_id, const G
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
         break;
     }
+    printf("gva_base_inference_set_property end/n");fflush(stdout);
 }
 
 void gva_base_inference_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec) {
+    printf("gva_base_inference_get_property start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(object);
 
     GST_DEBUG_OBJECT(base_inference, "get_property");
@@ -346,9 +361,11 @@ void gva_base_inference_get_property(GObject *object, guint property_id, GValue 
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
         break;
     }
+    printf("gva_base_inference_get_property end/n");fflush(stdout);
 }
 
 void gva_base_inference_dispose(GObject *object) {
+    printf("gva_base_inference_dispose start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(object);
 
     GST_DEBUG_OBJECT(base_inference, "dispose");
@@ -356,9 +373,11 @@ void gva_base_inference_dispose(GObject *object) {
     /* clean up as possible.  may be called multiple times */
 
     G_OBJECT_CLASS(gva_base_inference_parent_class)->dispose(object);
+    printf("gva_base_inference_dispose end/n");fflush(stdout);
 }
 
 void gva_base_inference_finalize(GObject *object) {
+    printf("gva_base_inference_finalize start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(object);
 
     GST_DEBUG_OBJECT(base_inference, "finalize");
@@ -367,9 +386,11 @@ void gva_base_inference_finalize(GObject *object) {
     gva_base_inference_cleanup(base_inference);
 
     G_OBJECT_CLASS(gva_base_inference_parent_class)->finalize(object);
+    printf("gva_base_inference_finalize end/n");fflush(stdout);
 }
 
 gboolean gva_base_inference_set_caps(GstBaseTransform *trans, GstCaps *incaps, GstCaps *outcaps) {
+    printf("gva_base_inference_set_caps start/n");fflush(stdout);
     UNUSED(outcaps);
 
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(trans);
@@ -380,7 +401,7 @@ gboolean gva_base_inference_set_caps(GstBaseTransform *trans, GstCaps *incaps, G
         base_inference->info = gst_video_info_new();
     }
     gst_video_info_from_caps(base_inference->info, incaps);
-
+printf("gva_base_inference_set_caps end/n");fflush(stdout);
     return TRUE;
 }
 
