@@ -49,6 +49,7 @@ void initExistingElements(InferenceRefs *infRefs) {
 }
 
 InferenceImpl *acquire_inference_instance(GvaBaseInference *ovino, GError **error) {
+    std::cout << "acquire_inference_instance start"<<std::endl<<std::flush;
     try {
         std::lock_guard<std::mutex> guard(inference_pool_mutex_);
         std::string name(ovino->inference_id);
@@ -104,11 +105,14 @@ InferenceImpl *acquire_inference_instance(GvaBaseInference *ovino, GError **erro
         return infRefs->proxy;
     } catch (const std::exception &exc) {
         g_set_error(error, 1, 1, "%s", exc.what());
+        std::cout << "acquire_inference_instance catch"<<std::endl<<std::flush;
         return nullptr;
     }
+    std::cout << "acquire_inference_instance end"<<std::endl<<std::flush;
 }
 
 void release_inference_instance(GvaBaseInference *ovino) {
+    std::cout << "release_inference_instance start"<<std::endl<<std::flush;
     std::lock_guard<std::mutex> guard(inference_pool_mutex_);
     std::string name(ovino->inference_id);
 
@@ -123,6 +127,7 @@ void release_inference_instance(GvaBaseInference *ovino) {
         delete infRefs;
         inference_pool_.erase(name);
     }
+    std::cout << "release_inference_instance end"<<std::endl<<std::flush;
 }
 
 GstFlowReturn frame_to_classify_inference(GvaBaseInference *ovino, GstBaseTransform *trans, GstBuffer *buf,

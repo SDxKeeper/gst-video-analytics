@@ -103,6 +103,7 @@ InferenceImpl::ClassificationModel InferenceImpl::CreateClassificationModel(GvaB
                                                                             const std::string &model_proc_path,
                                                                             const std::string &object_class) {
 
+    std::cout << "InferenceImpl::CreateClassificationModel start"<<std::endl<<std::flush;
     GST_WARNING_OBJECT(gva_base_inference, "Loading model: device=%s, path=%s", gva_base_inference->device,
                        model_file.c_str());
     GST_WARNING_OBJECT(gva_base_inference, "Setting batch_size=%d, nireq=%d", gva_base_inference->batch_size,
@@ -130,11 +131,13 @@ InferenceImpl::ClassificationModel InferenceImpl::CreateClassificationModel(GvaB
             break;
         }
     }
+    std::cout << "InferenceImpl::CreateClassificationModel end"<<std::endl<<std::flush;
     return model;
 }
 
 InferenceImpl::InferenceImpl(GvaBaseInference *gva_base_inference)
     : frame_num(-1), gva_base_inference(gva_base_inference) {
+    std::cout << "InferenceImpl::InferenceImpl start"<<std::endl<<std::flush;
     if (!gva_base_inference->model) {
         throw std::runtime_error("Model not specified");
     }
@@ -156,24 +159,30 @@ InferenceImpl::InferenceImpl(GvaBaseInference *gva_base_inference)
         auto model = CreateClassificationModel(gva_base_inference, allocator, model_files[i], model_proc, object_class);
         this->models.push_back(std::move(model));
     }
+    std::cout << "InferenceImpl::InferenceImpl end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::FlushInference() {
+    std::cout << "InferenceImpl::FlushInference start"<<std::endl<<std::flush;
     for (ClassificationModel &model : models) {
         model.inference->Flush();
     }
+    std::cout << "InferenceImpl::FlushInference end"<<std::endl<<std::flush;
 }
 
 InferenceImpl::~InferenceImpl() {
+    std::cout << "InferenceImpl::dtor start"<<std::endl<<std::flush;
     for (ClassificationModel &model : models) {
         for (auto proc : model.model_proc) {
             gst_structure_free(proc.second);
         }
     }
     models.clear();
+    std::cout << "InferenceImpl::dtor end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::PushOutput() {
+    std::cout << "InferenceImpl::PushOutput start"<<std::endl<<std::flush;
     while (!output_frames.empty()) {
         OutputFrame &front = output_frames.front();
         if (front.inference_count > 0) {
@@ -187,10 +196,12 @@ void InferenceImpl::PushOutput() {
 
         output_frames.pop_front();
     }
+    std::cout << "InferenceImpl::PushOutput end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::SubmitImage(ClassificationModel &model, GstVideoRegionOfInterestMeta *meta,
                                 InferenceBackend::Image &image, GstBuffer *buffer) {
+    std::cout << "InferenceImpl::SubmitImage start"<<std::endl<<std::flush;
     image.rect = {.x = (int)meta->x, .y = (int)meta->y, .width = (int)meta->w, .height = (int)meta->h};
     auto result = std::make_shared<InferenceResult>();
     result->inference_frame.buffer = buffer;
@@ -207,6 +218,7 @@ void InferenceImpl::SubmitImage(ClassificationModel &model, GstVideoRegionOfInte
         preProcessFunction = ((GetROIPreProcFunction)gva_base_inference->get_roi_pre_proc)(model.input_preproc, meta);
     }
     model.inference->SubmitImage(image, result, preProcessFunction);
+    std::cout << "InferenceImpl::SubmitImage end"<<std::endl<<std::flush;
 }
 
 GstFlowReturn InferenceImpl::SubmitImages(const std::vector<GstVideoRegionOfInterestMeta *> &metas, GstVideoInfo *info,
@@ -301,14 +313,17 @@ printf("InferenceImpl::TransformFrameIp end/n");fflush(stdout);
 }
 
 void InferenceImpl::SinkEvent(GstEvent *event) {
+    std::cout << "InferenceImpl::SinkEvent start"<<std::endl<<std::flush;
     if (event->type == GST_EVENT_EOS) {
         for (ClassificationModel &model : models) {
             model.inference->Flush();
         }
     }
+    std::cout << "InferenceImpl::SinkEvent end"<<std::endl<<std::flush;
 }
 
 void InferenceImpl::InferenceCompletionCallback(
+    std::cout << "InferenceImpl::InferenceCompletionCallback start"<<std::endl<<std::flush;
     std::map<std::string, InferenceBackend::OutputBlob::Ptr> blobs,
     std::vector<std::shared_ptr<InferenceBackend::ImageInference::IFrameBase>> frames) {
     if (frames.empty())
@@ -361,4 +376,5 @@ void InferenceImpl::InferenceCompletionCallback(
     }
 
     PushOutput();
+    std::cout << "InferenceImpl::InferenceCompletionCallback end"<<std::endl<<std::flush;
 }
