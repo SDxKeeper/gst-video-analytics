@@ -26,6 +26,7 @@ static std::mutex inference_pool_mutex_;
     _DST = g_strdup(_SRC);
 
 void registerElement(GvaBaseInference *ovino, GError **error) {
+    std::cout << "registerElement start"<<std::endl<<std::flush;
     try {
         std::lock_guard<std::mutex> guard(inference_pool_mutex_);
         std::string name(ovino->inference_id);
@@ -57,10 +58,13 @@ void registerElement(GvaBaseInference *ovino, GError **error) {
         }
     } catch (const std::exception &e) {
         g_set_error(error, 1, 1, "%s", CreateNestedErrorMsg(e).c_str());
+        std::cout << "registerElement catch"<<std::endl<<std::flush;
     }
+    std::cout << "registerElement end"<<std::endl<<std::flush;
 }
 
 void fillElementProps(GvaBaseInference *targetElem, GvaBaseInference *masterElem, InferenceImpl *inference_impl) {
+    std::cout << "fillElementProps start"<<std::endl<<std::flush;
     assert(masterElem);
     targetElem->inference = inference_impl;
 
@@ -74,17 +78,21 @@ void fillElementProps(GvaBaseInference *targetElem, GvaBaseInference *masterElem
     targetElem->gpu_streams = masterElem->gpu_streams;
     COPY_GSTRING(targetElem->infer_config, masterElem->infer_config);
     COPY_GSTRING(targetElem->allocator_name, masterElem->allocator_name);
+    std::cout << "fillElementProps end"<<std::endl<<std::flush;
     // no need to copy inference_id because it should match already.
 }
 
 void initExistingElements(InferenceRefs *infRefs) {
+    std::cout << "initExistingElements start"<<std::endl<<std::flush;
     assert(infRefs->masterElement);
     for (auto elem : infRefs->elementsToInit) {
         fillElementProps(elem, infRefs->masterElement, infRefs->proxy);
     }
+    std::cout << "initExistingElements end"<<std::endl<<std::flush;
 }
 
 InferenceImpl *acquire_inference_instance(GvaBaseInference *ovino, GError **error) {
+    std::cout << "acquire_inference_instance start"<<std::endl<<std::flush;
     try {
         std::lock_guard<std::mutex> guard(inference_pool_mutex_);
         std::string name(ovino->inference_id);
@@ -102,20 +110,25 @@ InferenceImpl *acquire_inference_instance(GvaBaseInference *ovino, GError **erro
         if (infRefs->proxy == nullptr)                 // no instance for current inference-id acquired yet
             infRefs->proxy = new InferenceImpl(ovino); // one instance for all elements with same inference-id
 
+        std::cout << "acquire_inference_instance end"<<std::endl<<std::flush;
         return infRefs->proxy;
     } catch (const std::exception &e) {
         g_set_error(error, 1, 1, "%s", CreateNestedErrorMsg(e).c_str());
+        std::cout << "acquire_inference_instance catch"<<std::endl<<std::flush;
         return nullptr;
     }
 }
 
 void release_inference_instance(GvaBaseInference *ovino) {
+    std::cout << "release_inference_instance start"<<std::endl<<std::flush;
     std::lock_guard<std::mutex> guard(inference_pool_mutex_);
     std::string name(ovino->inference_id);
 
     auto it = inference_pool_.find(name);
-    if (it == inference_pool_.end())
+    if (it == inference_pool_.end()) {
+        std::cout << "release_inference_instance end1"<<std::endl<<std::flush;
         return;
+    }
 
     InferenceRefs *infRefs = it->second;
     auto refcounter = --infRefs->numRefs;
@@ -124,9 +137,11 @@ void release_inference_instance(GvaBaseInference *ovino) {
         delete infRefs;
         inference_pool_.erase(name);
     }
+    std::cout << "release_inference_instance end2"<<std::endl<<std::flush;
 }
 
 GstFlowReturn frame_to_classify_inference(GvaBaseInference *element, GstBuffer *buf, GstVideoInfo *info) {
+    std::cout << "frame_to_classify_inference start"<<std::endl<<std::flush;
     if (!element || !element->inference) {
         GST_ERROR_OBJECT(element, "empty inference instance!!!!");
         return GST_BASE_TRANSFORM_FLOW_DROPPED;
@@ -139,19 +154,24 @@ GstFlowReturn frame_to_classify_inference(GvaBaseInference *element, GstBuffer *
         GST_ERROR_OBJECT(element, "%s", CreateNestedErrorMsg(e).c_str());
         status = GST_FLOW_ERROR;
     }
-
+    std::cout << "frame_to_classify_inference end"<<std::endl<<std::flush;
     return status;
 }
 
 void classify_inference_sink_event(GvaBaseInference *ovino, GstEvent *event) {
+    std::cout << "classify_inference_sink_event start"<<std::endl<<std::flush;
     ((InferenceImpl *)ovino->inference)->SinkEvent(event);
+    std::cout << "classify_inference_sink_event end"<<std::endl<<std::flush;
 }
 
 void flush_inference_classify(GvaBaseInference *ovino) {
+    std::cout << "flush_inference_classify start"<<std::endl<<std::flush;
     if (!ovino || !ovino->inference) {
         GST_ERROR_OBJECT(ovino, "empty inference instance!!!!");
+        std::cout << "flush_inference_classify end1"<<std::endl<<std::flush;
         return;
     }
 
     ((InferenceImpl *)ovino->inference)->FlushInference();
+    std::cout << "flush_inference_classify end2"<<std::endl<<std::flush;
 }
