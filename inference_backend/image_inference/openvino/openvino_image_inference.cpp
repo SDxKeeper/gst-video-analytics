@@ -190,7 +190,7 @@ OpenVINOImageInference::OpenVINOImageInference(std::string devices, std::string 
                                                CallbackFunc callback)
 
     : allocator(allocator), batch_size(batch_size) {
-
+std::cout << "OpenVINOImageInference begin"<<std::endl<<std::flush;
     GVA_DEBUG("Image Inference construct");
 
     std::atomic_init(&requests_processing_, static_cast<unsigned int>(0));
@@ -324,6 +324,7 @@ OpenVINOImageInference::OpenVINOImageInference(std::string devices, std::string 
     }
     initialized = true;
     this->callback = callback;
+    std::cout << "OpenVINOImageInference end"<<std::endl<<std::flush;
 }
 
 bool OpenVINOImageInference::IsQueueFull() {
@@ -385,6 +386,7 @@ void OpenVINOImageInference::SubmitImage(const Image &image, IFramePtr user_data
                                          std::function<void(Image &)> preProcessor) {
     GVA_DEBUG(__FUNCTION__);
     ITT_TASK(__FUNCTION__);
+    std::cout << "OpenVINOImageInference::SubmitImage begin"<<std::endl<<std::flush;
 
     ++requests_processing_;
     auto request = freeRequests.pop();
@@ -409,6 +411,7 @@ void OpenVINOImageInference::SubmitImage(const Image &image, IFramePtr user_data
     } else {
         freeRequests.push_front(request);
     }
+    std::cout << "OpenVINOImageInference::SubmitImage end"<<std::endl<<std::flush;
 }
 
 const std::string &OpenVINOImageInference::GetModelName() const {
