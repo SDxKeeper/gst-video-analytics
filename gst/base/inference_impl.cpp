@@ -211,6 +211,7 @@ void InferenceImpl::SubmitImage(ClassificationModel &model, GstVideoRegionOfInte
 
 GstFlowReturn InferenceImpl::SubmitImages(const std::vector<GstVideoRegionOfInterestMeta *> &metas, GstVideoInfo *info,
                                           GstBuffer *buffer) {
+    printf("InferenceImpl::SubmitImages start/n");fflush(stdout);
     // return FLOW_DROPPED as we push buffers from separate thread
     GstFlowReturn return_status = GST_BASE_TRANSFORM_FLOW_DROPPED;
 
@@ -231,12 +232,13 @@ GstFlowReturn InferenceImpl::SubmitImages(const std::vector<GstVideoRegionOfInte
         return_status = GST_FLOW_ERROR;
     }
     gva_buffer_unmap(buffer, image, mapContext);
-
+printf("InferenceImpl::SubmitImages end/n");fflush(stdout);
     return return_status;
 }
 
 GstFlowReturn InferenceImpl::TransformFrameIp(GvaBaseInference *gva_base_inference, GstBaseTransform *trans,
                                               GstBuffer *buffer, GstVideoInfo *info) {
+    printf("InferenceImpl::TransformFrameIp start/n");fflush(stdout);
     std::unique_lock<std::mutex> lock(_mutex);
 
     // Collect all ROI metas into std::vector
@@ -294,7 +296,7 @@ GstFlowReturn InferenceImpl::TransformFrameIp(GvaBaseInference *gva_base_inferen
             return GST_BASE_TRANSFORM_FLOW_DROPPED;
         }
     }
-
+printf("InferenceImpl::TransformFrameIp end/n");fflush(stdout);
     return SubmitImages(metas, info, buffer);
 }
 

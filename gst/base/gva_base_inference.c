@@ -386,6 +386,7 @@ gboolean gva_base_inference_set_caps(GstBaseTransform *trans, GstCaps *incaps, G
 
 /* states */
 gboolean gva_base_inference_start(GstBaseTransform *trans) {
+    printf("gva_base_inference_start start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(trans);
 
     GST_DEBUG_OBJECT(base_inference, "start");
@@ -409,6 +410,7 @@ gboolean gva_base_inference_start(GstBaseTransform *trans) {
     base_inference->initialized = TRUE;
 
 exit:
+printf("gva_base_inference_start end/n");fflush(stdout);
     return base_inference->initialized;
 }
 
@@ -423,16 +425,18 @@ gboolean gva_base_inference_stop(GstBaseTransform *trans) {
 }
 
 gboolean gva_base_inference_sink_event(GstBaseTransform *trans, GstEvent *event) {
+    printf("gva_base_inference_sink_event start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(trans);
 
     GST_DEBUG_OBJECT(base_inference, "sink_event");
 
     classify_inference_sink_event(base_inference, event);
-
+printf("gva_base_inference_sink_event end/n");fflush(stdout);
     return GST_BASE_TRANSFORM_CLASS(gva_base_inference_parent_class)->sink_event(trans, event);
 }
 
 GstFlowReturn gva_base_inference_transform_ip(GstBaseTransform *trans, GstBuffer *buf) {
+    printf("gva_base_inference_transform_ip start/n");fflush(stdout);
     GvaBaseInference *base_inference = GVA_BASE_INFERENCE(trans);
 
     GST_DEBUG_OBJECT(base_inference, "transform_ip");
@@ -445,7 +449,7 @@ GstFlowReturn gva_base_inference_transform_ip(GstBaseTransform *trans, GstBuffer
                           (NULL));
         return GST_FLOW_ERROR;
     }
-
+printf("gva_base_inference_transform_ip end/n");fflush(stdout);
     return frame_to_classify_inference(base_inference, trans, buf, base_inference->info);
 
     /* return GST_FLOW_OK; FIXME shouldn't signal about dropping frames in inplace transform function*/

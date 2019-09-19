@@ -127,11 +127,12 @@ void release_inference_instance(GvaBaseInference *ovino) {
 
 GstFlowReturn frame_to_classify_inference(GvaBaseInference *ovino, GstBaseTransform *trans, GstBuffer *buf,
                                           GstVideoInfo *info) {
+    printf("frame_to_classify_inference start/n");fflush(stdout);
     if (!ovino || !ovino->inference) {
         GST_ERROR_OBJECT(ovino, "empty inference instance!!!!");
         return GST_BASE_TRANSFORM_FLOW_DROPPED;
     }
-
+printf("frame_to_classify_inference end/n");fflush(stdout);
     return ((InferenceImpl *)ovino->inference)->TransformFrameIp(ovino, trans, buf, info);
 }
 
