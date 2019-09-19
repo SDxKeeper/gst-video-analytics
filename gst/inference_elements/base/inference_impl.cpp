@@ -390,9 +390,9 @@ void InferenceImpl::SinkEvent(GstEvent *event) {
 }
 
 void InferenceImpl::InferenceCompletionCallback(
-    std::cout << "Inf::InferenceImpl::InferenceCompletionCallback begin"<<std::endl<<std::flush;
     std::map<std::string, InferenceBackend::OutputBlob::Ptr> blobs,
     std::vector<std::shared_ptr<InferenceBackend::ImageInference::IFrameBase>> frames) {
+    std::cout << "Inf::InferenceImpl::InferenceCompletionCallback begin"<<std::endl<<std::flush;
     if (frames.empty())
         return;
 
