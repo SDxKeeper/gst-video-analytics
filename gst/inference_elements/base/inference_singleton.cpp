@@ -10,6 +10,7 @@
 #include "gva_utils.h"
 #include "inference_impl.h"
 #include <assert.h>
+#include <iostream>
 
 struct InferenceRefs {
     unsigned int numRefs = 0;
