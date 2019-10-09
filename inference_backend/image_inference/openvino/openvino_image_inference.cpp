@@ -426,7 +426,7 @@ void OpenVINOImageInference::GetModelInputInfo(int *width, int *height, int *for
 
 void OpenVINOImageInference::Flush() {
     std::unique_lock<std::mutex> lk(mutex_);
-    if (requests_processing_ != 0) {
+    while (requests_processing_ != 0) {
         request_processed_.wait_for(lk, std::chrono::seconds(1), [this] { return requests_processing_ == 0; });
     }
 }
